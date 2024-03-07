@@ -30,7 +30,6 @@ typedef struct
 
 typedef struct
 {
-
     uint16_t *fat_arr;
 
 }__attribute__((packed)) FAT;
@@ -43,13 +42,30 @@ root_directory root_arr[FS_FILE_MAX_COUNT];
 
 int fs_mount(const char *diskname)
 {
-	block_disk_open(diskname);
-	block_read(0, &super_block);
-	memcmp(super_block.signature, "ECS150FS", 8);
+	if (block_disk_open(diskname) == -1) 
+	{
+		return -1;
+	}
+
+	if (block_read(0, &super_block) == -1) 
+	{
+		return -1;
+	}
+
+	if (memcmp(super_block.signature, "ECS150FS", 8) != 0) 
+	{
+		return -1;
+	}
+
+	if (block_disk_count() != super_block.total_virtual_blocks) 
+	{
+        return -1;
+    }
 
 	int FAT_size = super_block.data_blocks * 2;
 	int num_FAT_block = (FAT_size / BLOCK_SIZE);
-    if ((FAT_size * 2) % BLOCK_SIZE > 0) {
+    if ((FAT_size * 2) % BLOCK_SIZE > 0) 
+	{
         num_FAT_block++;
 	}
     
@@ -64,23 +80,43 @@ int fs_mount(const char *diskname)
         }
     }
     fat.fat_arr[0] = FAT_EOC;
-	block_read(super_block.root_directory_index, root_arr);
+	if (block_read(super_block.root_directory_index, root_arr) == -1)
+	{
+		return -1;
+	}
+	
+	return 0;
     // Root directory creation
        /* TODO: Phase 1 */
 }
 
 int fs_umount(void)
 {
-	block_write(0, &super_block);
+	if (block_write(0, &super_block) == -1) 
+	{
+		return -1;
+	}
+
 	for (int data_blocks = 0; data_blocks < super_block.FAT_blocks; data_blocks++)
     {
-        if (block_write(data_blocks + 1, fat.fat_arr + data_blocks * BLOCK_SIZE) == -1) {
+        if (block_write(data_blocks + 1, fat.fat_arr + data_blocks * BLOCK_SIZE) == -1) 
+		{
             return -1;
         }
     }
+
     free(fat.fat_arr);
-	block_write(super_block.root_directory_index, root_arr);
-	block_disk_close();
+	
+	if (block_write(super_block.root_directory_index, root_arr) == -1) 
+	{
+		return -1;
+	}
+
+	if (block_disk_close() == -1)
+	{
+		return -1;
+	}
+
 	return 0; 
 }
 
@@ -94,8 +130,10 @@ int fs_info(void)
     printf("data_blk_count=%i\n", super_block.data_blocks);
 
     int fat_count = 0;
-    for (int i = 1; i < super_block.data_blocks; i++) {
-        if (fat.fat_arr[i] == 0) {
+    for (int i = 1; i < super_block.data_blocks; i++) 
+	{
+        if (fat.fat_arr[i] == 0) 
+		{
             fat_count++;
         }
     }
@@ -103,8 +141,10 @@ int fs_info(void)
 	printf("fat_free_ratio=%i/%i\n", fat_count, super_block.data_blocks);
 
     int root_count = 0;
-    for (int j = 0; j < FS_FILE_MAX_COUNT; j++) {
-        if (root_arr[j].file_name[0] == '\0') {
+    for (int i = 0; i < FS_FILE_MAX_COUNT; i++) 
+	{
+        if (root_arr[i].file_name[0] == '\0') 
+		{
             root_count++;
         }
     }
