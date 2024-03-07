@@ -43,6 +43,10 @@ root_directory root_arr[FS_FILE_MAX_COUNT];
 
 int fs_mount(const char *diskname)
 {
+	block_disk_open(diskname);
+	block_read(0, &super_block);
+	memcmp(super_block.signature, "ECS150FS", 8);
+
 	int FAT_size = super_block.data_blocks * 2;
 	int num_FAT_block = (FAT_size / BLOCK_SIZE);
     if ((FAT_size * 2) % BLOCK_SIZE > 0) {
@@ -60,12 +64,14 @@ int fs_mount(const char *diskname)
         }
     }
     fat.fat_arr[0] = FAT_EOC;
+	block_read(super_block.root_directory_index, root_arr);
     // Root directory creation
        /* TODO: Phase 1 */
 }
 
 int fs_umount(void)
 {
+	block_write(0, &super_block);
 	for (int data_blocks = 0; data_blocks < super_block.FAT_blocks; data_blocks++)
     {
         if (block_write(data_blocks + 1, fat.fat_arr + data_blocks * BLOCK_SIZE) == -1) {
@@ -73,6 +79,9 @@ int fs_umount(void)
         }
     }
     free(fat.fat_arr);
+	block_write(super_block.root_directory_index, root_arr);
+	block_disk_close();
+	return 0; 
 }
 
 int fs_info(void)
