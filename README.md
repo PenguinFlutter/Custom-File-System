@@ -41,6 +41,7 @@ The implementation of a `root_directory` struct, represents an array of 128 enti
 `file_size`: A 32-bit unsigned integer representing the size of the file.
 
 `first_block_index`: A 16-bit unsigned integer representing the index of the first block.
+
 `unused_padding`: An array of 10 bytes, used for padding to ensure that the structure is a specific size or alignment. 
 
 #### fs_mount()
@@ -59,7 +60,7 @@ https://github.com/Ell4iot/simple-file-system/blob/main/libfs/fs.c
 https://www.geeksforgeeks.org/difference-d-format-specifier-c-language/
 https://cplusplus.com/reference/cstring/memcmp/
 
-### Phase 2
+### Phase 2:
 
 #### fs_create()
 The `fs_create` function creates a new file within the file system. Initially, it verifies if the file system is mounted by checking the signature in the superblock. Following this, it scans the root directory array to confirm whether a file with the same name already exists. Upon finding an available slot in the root directory, it initializes the file entry by copying the filename, setting the file size to 0, and assigning the first block index to the `FAT_EOC`.
@@ -70,7 +71,7 @@ The `fs_delete` function removes a file from the file system. Upon locating the 
 #### fs_ls()
 The `fs_ls` function prints the listing of all the files in the file system. It then traverses through the root directory array, examining each entry to identify valid files. Files are recognized by checking if the first character of their filename is not the null character, which denotes an empty entry. For each identified file, the function prints essential information including the filename, file size, and the index of the first data block associated with the file.
 
-### Phase 3
+### Phase 3:
 
 #### File Descriptor
 The implementation of the `file_descriptor` struct, used in operations such as read, write, and changing the file offset. 
