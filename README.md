@@ -52,17 +52,24 @@ The `fs_umount` function is designed to unmountthe file system. It begins by wri
 #### fs_info()
 The `fs_info` function is responsible for providing information about the file system. It prints various parameters obtained from the superblock, such as the total number of blocks, the number of FAT blocks, the block index of the root directory, the index of the first data block, and the total number of data blocks. It also calculates the number of free blocks in the FAT and the number of free entries in the root directory then prints them out. 
 
-### Phase 2
-The `fs_create` function is designed to create a new file within the file system. Initially, it verifies if the file system is mounted by checking the signature in the superblock. Following this, it scans the root directory array to confirm whether a file with the same name already exists. Upon finding an available slot in the root directory, it initializes the file entry by copying the filename, setting the file size to 0, and assigning the first block index to the `FAT_EOC`.
-
-
-
-
-
-
-
+#### References
 https://stackoverflow.com/questions/65894320/could-someone-explain-to-me-what-uint64-t-is-doing-exactly
 https://clickhouse.com/docs/en/sql-reference/data-types/int-uint
 https://github.com/Ell4iot/simple-file-system/blob/main/libfs/fs.c
 https://www.geeksforgeeks.org/difference-d-format-specifier-c-language/
 https://cplusplus.com/reference/cstring/memcmp/
+
+### Phase 2
+
+#### fs_create()
+The `fs_create` function is designed to create a new file within the file system. Initially, it verifies if the file system is mounted by checking the signature in the superblock. Following this, it scans the root directory array to confirm whether a file with the same name already exists. Upon finding an available slot in the root directory, it initializes the file entry by copying the filename, setting the file size to 0, and assigning the first block index to the `FAT_EOC`.
+
+#### fs_delete()
+The `fs_delete` function is used to remove a file from the file system. Upon locating the file in the root directory, it updates the FAT to mark all blocks associated with the file as free. It iterates through the FAT chain starting from the first block index of the file until it reaches `FAT_EOC`, setting each block's entry in the FAT to 0. Then, the function cleans up the file entry in the root directory by resetting the filename, file size, and first block index fields.
+
+#### fs_ls()
+The `fs_ls` function prints the listing of all the files in the file system. It then traverses through the root directory array, examining each entry to identify valid files. Files are recognized by checking if the first character of their filename is not the null character, which denotes an empty entry. For each identified file, the function prints essential information including the filename, file size, and the index of the first data block associated with the file.
+
+
+
+
